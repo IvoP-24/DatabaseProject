@@ -15,8 +15,9 @@ int main(int argc, char * argv[]){
         printf("Sort = --sort price/year\n");
         printf("Print inventory : --print\n");
         printf("--------------------------------\n");
-        return-1;
-        free(products); }
+        free(products);
+        return -1;
+ }
      else if (argc  == 1 ) {
 
         printf("Invalid command. Type --help for more information.\n");
