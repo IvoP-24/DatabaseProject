@@ -19,3 +19,5 @@ void savefile(struct Products *products, int num_products, char *filename);
 void overwrite(struct Products *products, int num_products, char *filename);
 void printfile(char *filename);
 void sort_products(char *filename, char *criteria);
+void str_copy(char *dest, char *src);
+int str_compare(char *s1, char *s2);
