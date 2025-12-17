@@ -245,7 +245,7 @@ int function(struct Products *products, char *filename, int argc, char *argv[]) 
         printf("\n--- Product Saved ---\n");
         printfile(filename);
     } else {
-        printf("Invalid or incomplete arguments. Type --help for more information.\n");
+        
         return -1;
     }
     return 0;
