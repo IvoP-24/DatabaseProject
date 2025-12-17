@@ -1,0 +1,5 @@
+1,laptop,asus,zenbook14,2019,8,120,intel,integrated,899
+2,laptop,apple,macbookair,2021,16,75,apple_m1,integrated,1199
+3,desktop,lenovo,thinkcentre,2017,16,40,intel,nvidia,649
+4,laptop,hp,pavilion15,2020,12,200,intel,amd,799
+5,laptop,msi,stealthgs66,2022,32,25,intel,nvidia,1899
