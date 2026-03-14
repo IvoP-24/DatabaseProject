@@ -22,81 +22,96 @@ int str_compare(char *s1, char *s2) {
 }
 
 void sort_products(char *filename, char *criteria) {
-    int i, j;
     FILE *file = fopen(filename, "r");
     if (file == NULL) {
         printf("No file found.\n");
         return;
     }
 
-    struct Products products[1000];
     int count = 0;
-    char line[1000];
-    while (fgets(line, sizeof(line), file)) {
-    if (sscanf(line, "%d,%[^,],%[^,],%[^,],%d,%d,%d,%[^,],%[^,],%d",
-                   &products[count].product_id,
-                   products[count].category,
-                   products[count].brand,
-                   products[count].product_name,
-                   &products[count].year,
-                   &products[count].ram,
-                   &products[count].quantity,
-                   products[count].cpu,
-                   products[count].gpu,
-                   &products[count].per_unit) == 10) {
-            count++;
-        }
-    }
+    char line[512];
+    while (fgets(line, sizeof(line), file))
+        count++;
+    rewind(file);
 
+    struct Products *products = malloc(count * sizeof(struct Products));
+    int i = 0;
+    while (i < count && fgets(line, sizeof(line), file)) {
+        products[i].brand        = malloc(100);
+        products[i].product_name = malloc(200);
+        products[i].category     = malloc(100);
+        products[i].cpu          = malloc(100);
+        products[i].gpu          = malloc(100);
+        sscanf(line, "%d,%[^,],%[^,],%[^,],%d,%d,%d,%[^,],%[^,],%d",
+               &products[i].product_id,
+               products[i].category, 
+               products[i].brand,
+               products[i].product_name, 
+               &products[i].year, 
+               &products[i].ram,
+               &products[i].quantity, 
+               products[i].cpu, 
+               products[i].gpu, 
+               &products[i].per_unit);
+        i++;
+    }
     fclose(file);
 
     for (i = 0; i < count - 1; i++) {
-        for (j = 0; j < count - i - 1; j++) {
-            if (str_compare(criteria, "year") == 0) {
-                if (products[j].year > products[j + 1].year) {
-                    struct Products temp = products[j];
-                    products[j] = products[j + 1];
-                    products[j + 1] = temp;
-                }
-            } else if (str_compare(criteria, "price") == 0) {
-                if (products[j].per_unit > products[j + 1].per_unit) {
-                    struct Products temp = products[j];
-                    products[j] = products[j + 1];
-                    products[j + 1] = temp;
-                }
+        for (int j = 0; j < count - i - 1; j++) {
+            int swap = 0;
+            if (str_compare(criteria, "year") == 0 && products[j].year > products[j+1].year)
+                swap = 1;
+            if (str_compare(criteria, "price") == 0 && products[j].per_unit > products[j+1].per_unit)
+                swap = 1;
+            if (swap) {
+                struct Products temp = products[j];
+                products[j] = products[j+1];
+                products[j+1] = temp;
             }
         }
     }
 
-    if (count == 0) {
-        printf("No products found to sort.\n");
-        return;
-    }
-
-    overwrite(products, count, filename);
-
-    if (str_compare(criteria, "year") == 0) {
-        printf("--- Products Sorted by Year ---\n");
-    } else if (str_compare(criteria, "price") == 0) {
-        printf("--- Products Sorted by Price ---\n");
-    } else {
-        printf("Invalid sort type. Use 'year' or 'price'.\n");
-        return;
-    }
-
+    printf("--- Sorted by %s ---\n", criteria);
     for (i = 0; i < count; i++) {
         printf("%d,%s,%s,%s,%d,%d,%d,%s,%s,%d\n",
-               products[i].product_id,
-               products[i].category,
+               products[i].product_id, 
+               products[i].category, 
                products[i].brand,
-               products[i].product_name,
-               products[i].year,
+               products[i].product_name, 
+               products[i].year, 
                products[i].ram,
-               products[i].quantity,
-               products[i].cpu,
-               products[i].gpu,
+               products[i].quantity, 
+               products[i].cpu, 
+               products[i].gpu, 
                products[i].per_unit);
+        free(products[i].brand);
+        free(products[i].product_name);
+        free(products[i].category);
+        free(products[i].cpu);
+        free(products[i].gpu);
     }
+    free(products);
+}
+
+void filter_products(char *filename, char *field, char *value) {
+    FILE *file = fopen(filename, "r");
+    if (file == NULL) {
+        printf("No file found.\n");
+        return;
+    }
+
+    char line[512];
+    char category[512], brand[512];
+    printf("--- Filter: %s = %s ---\n", field, value);
+    while (fgets(line, sizeof(line), file)) {
+        sscanf(line, "%*d,%[^,],%[^,]", category, brand);
+        if (str_compare(field, "category") == 0 && str_compare(category, value) == 0)
+            printf("%s", line);
+        if (str_compare(field, "brand") == 0 && str_compare(brand, value) == 0)
+            printf("%s", line);
+    }
+    fclose(file);
 }
 
 void delete(struct Products *products, int num_products, char *filename) {
@@ -105,37 +120,14 @@ void delete(struct Products *products, int num_products, char *filename) {
     for (int i = 0; i < num_products; i++) {
         fprintf(file, "%d,%s,%s,%s,%d,%d,%d,%s,%s,%d\n",
                 products[i].product_id,
-                products[i].category,
+                products[i].category, 
                 products[i].brand,
-                products[i].product_name,
-                products[i].year,
+                products[i].product_name, 
+                products[i].year, 
                 products[i].ram,
-                products[i].quantity,
-                products[i].cpu,
-                products[i].gpu,
-                products[i].per_unit);
-    }
-    fclose(file);
-}
-
-void overwrite(struct Products *products, int num_products, char *filename) {
-    if (num_products <= 0) {
-        printf("File not modified, number of products is 0.\n");
-        return;
-    }
-    FILE *file = fopen(filename, "w");
-    if (file == NULL) return;
-    for (int i = 0; i < num_products; i++) {
-        fprintf(file, "%d,%s,%s,%s,%d,%d,%d,%s,%s,%d\n",
-                products[i].product_id,
-                products[i].category,
-                products[i].brand,
-                products[i].product_name,
-                products[i].year,
-                products[i].ram,
-                products[i].quantity,
-                products[i].cpu,
-                products[i].gpu,
+                products[i].quantity, 
+                products[i].cpu, 
+                products[i].gpu, 
                 products[i].per_unit);
     }
     fclose(file);
@@ -153,23 +145,16 @@ void savefile(struct Products *products, int num_products, char *filename) {
     if (file == NULL) printf("The file is not opened.");
     for (int i = 0; i < num_products; i++) {
         fprintf(file, "%d,%s,%s,%s,%d,%d,%d,%s,%s,%d\n",
-                products[i].product_id,
-                products[i].category,
-                products[i].brand,
-                products[i].product_name,
-                products[i].year,
-                products[i].ram,
-                products[i].quantity,
-                products[i].cpu,
-                products[i].gpu,
-                products[i].per_unit);
+                products[i].product_id, products[i].category, products[i].brand,
+                products[i].product_name, products[i].year, products[i].ram,
+                products[i].quantity, products[i].cpu, products[i].gpu, products[i].per_unit);
     }
     fclose(file);
 }
 
 int get_last_id(char *filename) {
     FILE *file = fopen(filename, "rb");
-    if (file == NULL) return 0; 
+    if (file == NULL) return 0;
     int last_id = 0;
     char line[512];
     while (fgets(line, sizeof(line), file)) {
@@ -182,7 +167,12 @@ int get_last_id(char *filename) {
 }
 
 int function(struct Products *products, char *filename, int argc, char *argv[]) {
-    struct Products product;
+    struct Products product = {0};
+    product.brand        = malloc(100);
+    product.product_name = malloc(200);
+    product.category     = malloc(100);
+    product.cpu          = malloc(100);
+    product.gpu          = malloc(100);
     int count = 0;
     for (int j = 1; j < argc; j++) {
         if (str_compare(argv[j], "-g") == 0) {
@@ -232,6 +222,9 @@ int function(struct Products *products, char *filename, int argc, char *argv[]) 
                 printf("Invalid sort argument\n");
                 return -1;
             }
+        } else if (str_compare(argv[j], "--filter") == 0) {
+            filter_products(filename, argv[j+1], argv[j+2]);
+            j += 2;
         } else if (str_compare(argv[j], "--print") == 0) {
             printf("\n--- Products ---\n");
             printfile(filename);
@@ -245,7 +238,6 @@ int function(struct Products *products, char *filename, int argc, char *argv[]) 
         printf("\n--- Product Saved ---\n");
         printfile(filename);
     } else {
-        
         return -1;
     }
     return 0;
