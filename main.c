@@ -1,12 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include "product.h"
 int main(int argc, char * argv[]){
     struct Products *products = malloc(sizeof(struct Products));
     printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
 
-    if (argc >  1 && strcmp(argv[1], "--help") == 0) {
+    if (argc >  1 && str_compare(argv[1], "--help") == 0) {
 
         printf("Required 9 specifications :\nGPU = -g \nCPU = -c \nRAM = -r YEAR = -y \nBRAND = -b  \nQUANTITY = -q  \nPRICE PER UNIT = -p \nCATEGORY = -u \nPRODUCT NAME = -n\n");
         printf("--------------------------------\n");
@@ -14,6 +13,7 @@ int main(int argc, char * argv[]){
         printf("Delete everything = -o\n");
         printf("Sort = --sort price/year\n");
         printf("Print inventory : --print\n");
+        printf("Filtering : -- filter category/brand E.G category laptop, apple brand\n");
         printf("--------------------------------\n");
         free(products);
         return -1;
